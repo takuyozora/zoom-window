@@ -222,6 +222,15 @@ PERSP: the perspective to be killed."
         (t
          (frame-parameter (window-frame nil) 'zoom-window-buffers))))
 
+(defun zoom-window--reset-modeline-color ()
+  "Reset color of modeline"
+  (face-remap-remove-relative zoom-window--orig-color-cookie)
+  (setq zoom-window--orig-color-cookie nil))
+
+(defun zoom-window--change-modeline-color ()
+  "Change color of modeline"
+  (setq zoom-window--orig-color-cookie (zoom-window-set-mode-line-color)))
+
 (defun zoom-window--restore-mode-line-face ()
   "Not documented."
   (let ((color
@@ -236,7 +245,7 @@ PERSP: the perspective to be killed."
                   (assoc-default 'zoom-window-saved-color property)))
 
                (t zoom-window--orig-color))))
-    (face-remap-remove-relative zoom-window--orig-color-cookie)))
+    (zoom-window--reset-modeline-color)))
 
 (defun zoom-window--configuration-key ()
   "Not documented."
@@ -340,7 +349,7 @@ PERSP: the perspective to be killed."
         (zoom-window--save-buffers)
         (zoom-window--save-window-configuration)
         (delete-other-windows)
-        (setq zoom-window--orig-color-cookie (zoom-window-set-mode-line-color)))
+        (zoom-window--change-modeline-color))
       (force-mode-line-update)
       (zoom-window--toggle-enabled))))
 
@@ -349,11 +358,13 @@ PERSP: the perspective to be killed."
   (interactive)
   (let* ((buffers (zoom-window--get-buffers))
          (targets (member (current-buffer) buffers)))
+    (zoom-window--reset-modeline-color)
     (if targets
         (if (cdr targets)
             (switch-to-buffer (cadr targets))
           (switch-to-buffer (car buffers)))
-      (switch-to-buffer (car buffers)))))
+      (switch-to-buffer (car buffers)))
+    (zoom-window--change-modeline-color)))
 
 (provide 'zoom-window)
 
