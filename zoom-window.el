@@ -62,6 +62,8 @@
 
 (defvar zoom-window--window-configuration (make-hash-table :test #'equal))
 (defvar zoom-window--orig-color nil)
+(defvar zoom-window--orig-color-cookie nil)
+(make-variable-buffer-local 'zoom-window--orig-color-cookie)
 
 (defun zoom-window--put-alist (key value alist)
   "Not documented."
@@ -234,7 +236,7 @@ PERSP: the perspective to be killed."
                   (assoc-default 'zoom-window-saved-color property)))
 
                (t zoom-window--orig-color))))
-    (set-face-background 'mode-line color (window-frame nil))))
+    (face-remap-remove-relative zoom-window--orig-color-cookie)))
 
 (defun zoom-window--configuration-key ()
   "Not documented."
@@ -338,7 +340,7 @@ PERSP: the perspective to be killed."
         (zoom-window--save-buffers)
         (zoom-window--save-window-configuration)
         (delete-other-windows)
-        (set-face-background 'mode-line zoom-window-mode-line-color curframe))
+        (setq zoom-window--orig-color-cookie (zoom-window-set-mode-line-color)))
       (force-mode-line-update)
       (zoom-window--toggle-enabled))))
 
